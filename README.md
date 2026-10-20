@@ -3,13 +3,21 @@
 HARVIX is a responsive AI workspace for coding help, debugging, code conversion, symbolic mathematics, and general questions. It ships with a React/Vite dashboard, FastAPI service, SymPy-backed math endpoint, optional OpenAI integration, Docker support, and CI.
 
 ## Architecture
-```mermaid
-flowchart LR
-  UI[React dashboard] -->|REST JSON| API[FastAPI API]
-  API --> Router[Intent router]
-  Router --> Math[SymPy math engine]
-  Router --> LLM[Optional OpenAI provider]
-  API --> History[(SQLite/Postgres ready)]
+```text
+┌─────────────────────┐       REST JSON        ┌─────────────────────┐
+│ React/Vite dashboard│ ─────────────────────▶ │ FastAPI API         │
+└─────────────────────┘                       └──────────┬──────────┘
+                                                         │
+                                              ┌──────────▼──────────┐
+                                              │ Intent router       │
+                                              └───────┬───────┬──────┘
+                                                      │       │
+                                      ┌───────────────▼─┐   ┌─▼─────────────────┐
+                                      │ SymPy math      │   │ Optional OpenAI   │
+                                      │ engine          │   │ provider          │
+                                      └─────────────────┘   └───────────────────┘
+
+                                  API configuration is stored in environment variables.
 ```
 
 ## Features
