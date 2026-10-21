@@ -1,0 +1,14 @@
+digraph Backend {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.4", ranksep="0.7", splines=ortho, fontname="Arial"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.20,0.12", color="#334155", penwidth=1.3];
+  edge [color="#64748B", penwidth=1.4, arrowsize=0.75, fontname="Arial", fontsize=10];
+  root [label="backend/", fillcolor="#E9E2FF", color="#7357D6", fontsize=15];
+  app [label="app/", fillcolor="#DBF2FF", color="#2693C7"];
+  main [label="main.py\nFastAPI app • CORS\nchat + math endpoints", fillcolor="#EFFAFF", color="#63B7D8"];
+  init [label="__init__.py", fillcolor="#EFFAFF", color="#63B7D8"];
+  tests [label="tests/", fillcolor="#DDF7E8", color="#3D9B66"];
+  testapi [label="test_api.py\nhealth • math • routing", fillcolor="#EEFFF4", color="#63A97A"];
+  config [label="Project configuration\nrequirements.txt • .env.example", fillcolor="#FFF1DD", color="#C58A44"];
+  root -> app; root -> tests; root -> config;
+  app -> main; app -> init; tests -> testapi;
+}

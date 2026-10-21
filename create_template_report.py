@@ -14,6 +14,7 @@ ROLE_ACCESS = Path('/home/ubuntu/HARVIX---AIBOT/docs/role-access-flow.png')
 INGESTION = Path('/home/ubuntu/HARVIX---AIBOT/docs/document-ingestion-flow.png')
 QUERY_FLOW = Path('/home/ubuntu/HARVIX---AIBOT/docs/query-generation-flow.png')
 AUTH_FLOW = Path('/home/ubuntu/HARVIX---AIBOT/docs/authentication-flow.png')
+BACKEND_STRUCTURE = Path('/home/ubuntu/HARVIX---AIBOT/docs/backend-project-structure.png')
 NAVY='17365D'; BLUE='2F75B5'; GRAY='666666'
 
 doc = Document(TEMPLATE)
@@ -176,7 +177,8 @@ body_text('If added in the future, RAG could provide organization-specific answe
 heading('CHAPTER 5',1); heading('Implementation',2)
 heading('Backend Project Structure',5)
 body_text('The backend is intentionally compact and easy to understand. The main module contains the FastAPI application, request models, intent router, SymPy math engine, local responses, and optional language-model adapter. Tests are kept in a separate backend/tests directory.')
-code_block('backend/\n├── __init__.py\n├── app/\n│   ├── __init__.py\n│   └── main.py\n└── tests/\n    └── test_api.py')
+p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; p.add_run().add_picture(str(BACKEND_STRUCTURE), width=Inches(6.1))
+caption('HARVIX backend project structure')
 heading('Authentication Implementation',5)
 body_text('Authentication is not implemented in the current version. The application is delivered as a core AI workspace demonstration. Future implementation can add secure password hashing, JWT sessions, Google login, and user-specific access to saved conversations.')
 heading('Multi-Format Document Ingestion',5)
