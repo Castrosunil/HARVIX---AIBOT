@@ -37,8 +37,8 @@ class MathResponse(BaseModel):
 def route_message(message: str, requested: str) -> str:
     if requested != "auto": return requested
     lower = message.lower()
+    if "```" in message or any(x in lower for x in ["python", "javascript", "typescript", "java", "c++", "sql", "bug", "debug", "refactor", "code", "coding", "program", "programming", "function", "algorithm", "class", "loop"]): return "coding"
     if any(x in lower for x in ["derivative", "integral", "solve", "equation", "matrix", "calculate", "factor", "limit", "convert "]): return "math"
-    if "```" in message or any(x in lower for x in ["python", "javascript", "typescript", "java", "c++", "sql", "bug", "debug", "refactor", "code", "function"]): return "coding"
     return "general"
 
 
@@ -72,7 +72,16 @@ def local_reply(message: str, mode: str) -> str:
         except HTTPException:
             return "I can solve that precisely, but I need a clearer expression. For example: `2x^2 - 5x + 3 = 0` or `derivative: x^3*sin(x)`."
     if mode == "coding":
-        return "I’m ready to help with code. Tell me the language and goal, or paste the code and error. I can generate, explain, debug, refactor, or convert it."
+        lower = message.lower()
+        if "prime" in lower:
+            return "### Basic Python example\n\n```python\ndef primes_up_to(limit):\n    primes = []\n    for number in range(2, limit + 1):\n        if all(number % divisor for divisor in range(2, int(number ** 0.5) + 1)):\n            primes.append(number)\n    return primes\n\nprint(primes_up_to(20))\n```\n\nThis function returns all prime numbers from 2 up to the given limit."
+        if "factorial" in lower:
+            return "### Basic Python example\n\n```python\ndef factorial(number):\n    result = 1\n    for value in range(2, number + 1):\n        result *= value\n    return result\n\nprint(factorial(5))\n```\n\nThe function multiplies each integer from 2 through the input number."
+        if "fibonacci" in lower:
+            return "### Basic Python example\n\n```python\ndef fibonacci(count):\n    values = []\n    first, second = 0, 1\n    for _ in range(count):\n        values.append(first)\n        first, second = second, first + second\n    return values\n\nprint(fibonacci(8))\n```\n\nThe function returns the first requested Fibonacci values."
+        if "sum" in lower or "add" in lower:
+            return "### Basic Python example\n\n```python\ndef add_numbers(first, second):\n    return first + second\n\nprint(add_numbers(3, 4))\n```\n\nThis function accepts two numbers and returns their sum."
+        return "### Basic Python example\n\n```python\ndef greet_user(name):\n    return f\"Hello, {name}!\"\n\nprint(greet_user(\"Student\"))\n```\n\nTell me the language and task if you want HARVIX to generate a more specific example."
     return "Hello, I’m HARVIX. I can help with programming, debugging, code conversion, mathematics, and everyday questions. What would you like to work on?"
 
 @app.get("/api/health")
