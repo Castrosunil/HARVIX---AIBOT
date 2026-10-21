@@ -1,0 +1,18 @@
+digraph HARVIX {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=15, margin="0.22,0.14", color="#334155", penwidth=1.4];
+  edge [color="#64748B", penwidth=1.6, arrowsize=0.8];
+
+  ui [label="React / Vite\nDashboard", fillcolor="#E9E2FF", color="#7357D6"];
+  api [label="FastAPI\nREST API", fillcolor="#DBF2FF", color="#2693C7"];
+  router [label="Intent\nRouter", fillcolor="#FFF0C7", color="#D79A00"];
+  math [label="SymPy\nMath Engine", fillcolor="#DDF7E8", color="#3D9B66"];
+  openai [label="Optional OpenAI\nProvider", fillcolor="#E5E7EB", color="#64748B"];
+  local [label="Local Deterministic\nFallback", fillcolor="#FFE1E1", color="#C65B5B"];
+
+  ui -> api [label=" REST JSON ", fontname="Arial", fontsize=11, color="#475569"];
+  api -> router;
+  router -> math;
+  router -> openai;
+  router -> local;
+}

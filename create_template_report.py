@@ -9,6 +9,7 @@ from pathlib import Path
 TEMPLATE = Path('/home/ubuntu/upload/Internship_Report.docx')
 OUT = Path('/home/ubuntu/HARVIX---AIBOT/Internship_Report_HARVIX_Template.docx')
 SCREENSHOT = Path('/home/ubuntu/HARVIX---AIBOT/docs/dashboard-screenshot.png')
+ARCHITECTURE = Path('/home/ubuntu/HARVIX---AIBOT/docs/harvix-architecture-flowchart.png')
 NAVY='17365D'; BLUE='2F75B5'; GRAY='666666'
 
 doc = Document(TEMPLATE)
@@ -115,7 +116,7 @@ body_text('HARVIX combines a responsive conversation dashboard with a FastAPI se
 heading('Why RAG over the Alternatives',5)
 body_text('The template heading is retained for structural consistency. HARVIX does not currently implement a document-retrieval pipeline; instead, it focuses on direct intent routing and deterministic mathematics. A future retrieval layer could add project documentation or organizational knowledge as context before generation, while preserving the same principle of reducing unsupported answers.')
 heading('System Architecture',5)
-code_block('React/Vite Dashboard  →  FastAPI REST API  →  Intent Router\n                                                     ├── SymPy Math Engine\n                                                     ├── Optional OpenAI Provider\n                                                     └── Local Deterministic Fallback')
+p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; p.add_run().add_picture(str(ARCHITECTURE), width=Inches(6.25))
 caption('Figure 3.1: HARVIX system architecture')
 heading('Component Responsibilities',5)
 body_text('The React frontend is responsible for the user interface, message composition, mode controls, suggestions, conversation display, and responsive layout. The FastAPI backend validates requests, exposes REST endpoints, routes messages, calls the mathematics engine, and optionally communicates with an external language-model provider. SymPy performs exact symbolic operations. Docker and GitHub Actions support repeatable execution and automated validation.')
