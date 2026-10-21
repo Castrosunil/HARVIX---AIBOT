@@ -7,12 +7,12 @@ const API = import.meta.env.VITE_API_URL || '/api';
 const starter = [{ role: 'assistant', content: 'Hello! I’m HARVIX, your AI coding and mathematics assistant.\n\nI can help you build, debug, explain, and solve — with clear, reliable answers.' }];
 
 function extractCode(text) {
-  const match = text.match(/```([\\w+#-]*)\\n([\\s\\S]*?)```/);
+  const match = text.match(/```([\w+#-]*)\n([\s\S]*?)```/);
   return match ? { language: match[1] || 'python', code: match[2].trim() } : null;
 }
 
 function renderMarkdown(text) {
-  const parts = text.split(/```([\\w+#-]*)\\n([\\s\\S]*?)```/g);
+  const parts = text.split(/```([\w+#-]*)\n([\s\S]*?)```/g);
   const nodes = [];
   for (let i = 0; i < parts.length; i += 3) {
     const prose = parts[i];
@@ -26,7 +26,7 @@ function renderMarkdown(text) {
     if (i + 1 < parts.length) {
       const language = parts[i + 1] || 'python';
       const code = parts[i + 2];
-      nodes.push(<pre className="code-block" key={`code-${i}`}><code>{code}</code></pre>);
+      nodes.push(<div className="code-shell" key={`code-${i}`}><div className="code-header"><span>{language || 'python'}</span><span>CODE</span></div><pre className="code-block"><code>{code.trim()}</code></pre></div>);
     }
   }
   return nodes;
@@ -115,7 +115,7 @@ function App() {
         {messages.map((message, index) => <div className={`message ${message.role}`} key={`${index}-${message.content.slice(0, 12)}`}><div className="msgavatar">{message.role === 'assistant' ? 'H' : 'CS'}</div><div className={`bubble ${message.error ? 'error-bubble' : ''}`}>
           <div className="meta">{message.role === 'assistant' ? 'HARVIX' : 'You'} {message.mode && <span className="tag">{message.mode}</span>}</div>
           <div className="text">{message.role === 'assistant' ? renderMarkdown(message.content) : message.content}</div>
-          {message.role === 'assistant' && !message.error && index > 0 && <div className="response-actions"><button className="copy" onClick={() => copyCode(extractCode(message.content)?.code || message.content)}>{copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}</button>{extractCode(message.content)?.language === 'python' && <button className="copy" onClick={() => runCode(extractCode(message.content).code)}><Play size={14} /> Run Code</button>}</div>}
+          {message.role === 'assistant' && !message.error && index > 0 && <div className="response-actions">{extractCode(message.content) ? <button className="copy" onClick={() => copyCode(extractCode(message.content).code)}>{copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy Code'}</button> : <button className="copy" onClick={() => copyCode(message.content)}>{copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}</button>}{extractCode(message.content)?.language === 'python' && <button className="copy" onClick={() => runCode(extractCode(message.content).code)}><Play size={14} /> Run Code</button>}</div>}
         </div></div>)}
         {loading && <div className="message assistant"><div className="msgavatar">H</div><div className="bubble"><div className="meta">HARVIX <span className="tag">thinking</span></div><div className="typing"><i /><i /><i /></div></div></div>}
         {runResult && !runResult.loading && <div className={`execution-result ${runResult.success ? 'success' : 'failure'}`}><div className="execution-title"><Play size={14} /> {runResult.success ? 'OUTPUT' : 'ERROR'}</div><pre>{runResult.success ? (runResult.output || '(no stdout)') : runResult.error}</pre></div>}
