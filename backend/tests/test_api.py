@@ -21,3 +21,49 @@ def test_chat_generates_basic_code():
     assert response.status_code == 200
     assert data['mode'] == 'coding'
     assert '```python' in data['reply'] and 'def factorial' in data['reply']
+
+def test_chat_returns_structured_response_alias():
+    response = client.post('/api/chat', json={'message': 'Create a Python program to find the largest number in an array.', 'mode': 'auto'})
+    data = response.json()
+    assert data['response'] == data['reply']
+    assert 'largest_number' in data['response']
+
+def test_chat_preserves_code_request_types():
+    cases = [
+        ('Write a Python program for binary search.', 'binary_search'),
+        ('Give me a Java program for a linked list.', 'class Node'),
+        ('Generate 10 test cases for this problem.', 'solve_case'),
+    ]
+    for prompt, expected in cases:
+        data = client.post('/api/chat', json={'message': prompt, 'mode': 'auto'}).json()
+        assert data['mode'] == 'coding'
+        assert expected in data['reply']
+
+def test_execute_python_returns_real_stdout_and_multiple_inputs():
+    response = client.post('/api/execute', json={
+        'language': 'python',
+        'code': 'values = [int(line) for line in input().split()]\nprint(sum(values))',
+        'stdin': '5 10 15',
+    })
+    data = response.json()
+    assert response.status_code == 200
+    assert data['success'] is True
+    assert data['output'].strip() == '30'
+
+def test_execute_python_reports_errors():
+    response = client.post('/api/execute', json={'language': 'python', 'code': 'print(1 / 0)'})
+    data = response.json()
+    assert response.status_code == 200
+    assert data['success'] is False
+    assert 'ZeroDivisionError' in data['error']
+
+def test_chat_run_request_returns_actual_output():
+    response = client.post('/api/chat', json={
+        'message': 'Run this program:\n```python\nprint(10)\n```\nInput: 10',
+        'mode': 'auto',
+    })
+    data = response.json()
+    assert response.status_code == 200
+    assert data['mode'] == 'coding'
+    assert '10' in data['response']
+    assert 'Execution result' in data['response']

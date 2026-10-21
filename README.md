@@ -23,7 +23,10 @@ HARVIX is a responsive AI workspace for coding help, debugging, code conversion,
 ## Features
 - Auto, Coding, and Math modes with clear conversation UI.
 - Exact symbolic math for simplification, equations, derivatives, and integrals.
-- Local deterministic fallback when no LLM key is configured.
+- Dynamic coding-task routing for generation, explanation, debugging, conversion, optimization, and multi-test-case requests.
+- Structured Markdown/code output with Copy Code and Run Code actions.
+- Safe local Python execution with captured stdout, stderr, exit code, timeout, and real execution results.
+- Local deterministic fallback when no LLM key is configured; optional OpenAI integration for arbitrary coding requests.
 - Input validation, CORS configuration, health check, tests, Docker, and GitHub Actions.
 
 ## Run locally
@@ -45,13 +48,16 @@ docker compose up --build
 
 ## Example prompts
 - `Write a Python program to find prime numbers up to N.`
+- `Create a Python program to find the largest number in an array.`
+- `Write a Python program for binary search.`
+- `Run this program: ```python\nprint(10)\n``` Input: 10`
 - `Solve 2*x^2 - 5*x + 3 = 0 step by step.`
 - `Find the derivative of x^3*sin(x).`
 - `Convert this Java code to Python.`
 
 ## Project structure
 - `frontend/`: React dashboard and responsive styles.
-- `backend/app/main.py`: API, routing, math engine, optional LLM adapter.
+- `backend/app/main.py`: API, intent routing, math engine, code generation, execution service, optional LLM adapter.
 - `backend/tests/`: API and math tests.
 - `Dockerfile`, `docker-compose.yml`: container setup.
 - `.github/workflows/ci.yml`: automated test/build pipeline.
