@@ -67,3 +67,14 @@ def test_chat_run_request_returns_actual_output():
     assert data['mode'] == 'coding'
     assert '10' in data['response']
     assert 'Execution result' in data['response']
+
+def test_python_is_default_for_general_generation_requests():
+    response = client.post('/api/chat', json={
+        'message': 'Create a program to read a file and count the words.',
+        'mode': 'auto',
+    })
+    data = response.json()
+    assert response.status_code == 200
+    assert data['mode'] == 'coding'
+    assert '```python' in data['response']
+    assert 'OPENAI_API_KEY' not in data['response']

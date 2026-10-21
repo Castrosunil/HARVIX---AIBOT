@@ -133,6 +133,66 @@ def previous_code(history: list[dict[str, str]]) -> str:
     return ""
 
 
+def generic_code_reply(message: str) -> str:
+    """Return a useful runnable starter for common code requests without an external AI key."""
+    lower = message.lower()
+    language = "python"
+    if "javascript" in lower or "node.js" in lower or re.search(r"\bjs\b", lower):
+        language = "javascript"
+    elif "java" in lower and "javascript" not in lower:
+        language = "java"
+    elif "c++" in lower or "cpp" in lower:
+        language = "cpp"
+
+    task = "general programming task"
+    if "sort" in lower:
+        task = "sorting an array"
+    elif "palindrome" in lower:
+        task = "checking a palindrome"
+    elif "reverse" in lower and "string" in lower:
+        task = "reversing a string"
+    elif "prime" in lower:
+        task = "checking prime numbers"
+    elif "calculator" in lower or "calculate" in lower:
+        task = "a calculator"
+    elif "even" in lower or "odd" in lower:
+        task = "checking whether a number is even or odd"
+    elif "pattern" in lower:
+        task = "printing a pattern"
+    elif "read" in lower and "file" in lower and "word" in lower:
+        task = "counting words in a file"
+
+    templates = {
+        "python": {
+            "sorting an array": "def sort_numbers(values):\n    return sorted(values)\n\nvalues = list(map(int, input('Enter numbers: ').split()))\nprint(sort_numbers(values))",
+            "checking a palindrome": "def is_palindrome(text):\n    cleaned = ''.join(ch.lower() for ch in text if ch.isalnum())\n    return cleaned == cleaned[::-1]\n\ntext = input('Enter text: ')\nprint(is_palindrome(text))",
+            "reversing a string": "text = input('Enter a string: ')\nprint(text[::-1])",
+            "checking prime numbers": "def is_prime(number):\n    if number < 2:\n        return False\n    return all(number % divisor for divisor in range(2, int(number ** 0.5) + 1))\n\nnumber = int(input('Enter a number: '))\nprint(is_prime(number))",
+            "a calculator": "first = float(input('First number: '))\noperator = input('Operator (+, -, *, /): ')\nsecond = float(input('Second number: '))\n\noperations = {'+': first + second, '-': first - second, '*': first * second, '/': first / second}\nprint(operations[operator])",
+            "checking whether a number is even or odd": "number = int(input('Enter a number: '))\nprint('Even' if number % 2 == 0 else 'Odd')",
+            "printing a pattern": "rows = int(input('Number of rows: '))\nfor row in range(1, rows + 1):\n    print('*' * row)",
+            "counting words in a file": "from pathlib import Path\n\nfile_path = input('File path: ')\ntext = Path(file_path).read_text(encoding='utf-8')\nwords = text.split()\nprint(f'Word count: {len(words)}')",
+            "general programming task": "def solve():\n    # Implement the requested logic here.\n    # Read input, process it, and print the result.\n    pass\n\nif __name__ == '__main__':\n    solve()",
+        },
+        "javascript": {
+            "sorting an array": "const values = [5, 2, 9, 1];\nconsole.log(values.sort((a, b) => a - b));",
+            "checking a palindrome": "const text = prompt('Enter text:');\nconst normalized = text.toLowerCase().replace(/[^a-z0-9]/g, '');\nconsole.log(normalized === [...normalized].reverse().join(''));",
+            "general programming task": "function solve(input) {\n  // Implement the requested logic here.\n  return input;\n}\n\nconsole.log(solve('input'));",
+        },
+        "java": {
+            "sorting an array": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        int[] values = {5, 2, 9, 1};\n        Arrays.sort(values);\n        System.out.println(Arrays.toString(values));\n    }\n}",
+            "general programming task": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Read input and implement the requested logic here.\n    }\n}",
+        },
+        "cpp": {
+            "sorting an array": "#include <algorithm>\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<int> values{5, 2, 9, 1};\n    sort(values.begin(), values.end());\n    for (int value : values) cout << value << ' ';\n    return 0;\n}",
+            "general programming task": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Read input and implement the requested logic here.\n    return 0;\n}",
+        },
+    }
+    code = templates.get(language, templates["python"]).get(task) or templates[language]["general programming task"]
+    label = {"python": "Python", "javascript": "JavaScript", "java": "Java", "cpp": "C++"}[language]
+    return f"### {label} program: {task}\n\n```{language}\n{code}\n```\n\nThis local starter was generated from your request. Add the problem constraints or sample input for a more specific implementation."
+
+
 def local_code_reply(message: str, history: list[dict[str, str]]) -> str:
     lower = message.lower()
     supplied_code, supplied_language = extract_code(message)
@@ -185,7 +245,9 @@ def local_code_reply(message: str, history: list[dict[str, str]]) -> str:
         if code:
             return f"### Optimization review\n\nThe complete source was received. For an exact complexity-preserving rewrite, the configured AI provider should analyze the algorithm and constraints.\n\n```{supplied_language}\n{code}\n```\n\nTarget constraint: O(n log n)."
         return "Provide the complete program and its input constraints in a fenced code block. HARVIX will return the optimized code and explain the time and space complexity."
-    return "### Coding request received\n\nHARVIX preserved your complete request. Configure `OPENAI_API_KEY` to receive a provider-generated solution for arbitrary programming tasks, or include the language, input format, and expected output so the local assistant can produce a targeted implementation."
+    if any(word in lower for word in ["write", "create", "generate", "give me", "build", "make", "program", "function"]):
+        return generic_code_reply(message)
+    return "### Coding request received\n\nHARVIX preserved your complete request. Include the programming language, task, input format, and expected output so the local processor can generate a targeted implementation."
 
 
 def local_reply(message: str, mode: str, history: list[dict[str, str]]) -> str:
