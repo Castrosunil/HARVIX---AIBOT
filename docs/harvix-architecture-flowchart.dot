@@ -1,18 +1,55 @@
 digraph HARVIX {
-  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65"];
-  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=15, margin="0.22,0.14", color="#334155", penwidth=1.4];
-  edge [color="#64748B", penwidth=1.6, arrowsize=0.8];
+  graph [rankdir=LR, bgcolor="white", pad="0.28", nodesep="0.40", ranksep="0.70", splines=ortho, fontname="Arial"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.20,0.12", color="#334155", penwidth=1.3];
+  edge [color="#64748B", penwidth=1.4, arrowsize=0.75, fontname="Arial", fontsize=10];
 
-  ui [label="React / Vite\nDashboard", fillcolor="#E9E2FF", color="#7357D6"];
-  api [label="FastAPI\nREST API", fillcolor="#DBF2FF", color="#2693C7"];
-  router [label="Intent\nRouter", fillcolor="#FFF0C7", color="#D79A00"];
-  math [label="SymPy\nMath Engine", fillcolor="#DDF7E8", color="#3D9B66"];
-  openai [label="Optional OpenAI\nProvider", fillcolor="#E5E7EB", color="#64748B"];
-  local [label="Local Deterministic\nFallback", fillcolor="#FFE1E1", color="#C65B5B"];
+  subgraph cluster_frontend {
+    label="FRONTEND — React / Vite Dashboard"; color="#8B78E6"; penwidth=1.5; style="rounded,dashed"; fontsize=15; fontname="Arial Bold";
+    ui [label="HARVIX Workspace", fillcolor="#E9E2FF", color="#7357D6"];
+    chat [label="Chat Interface\nmessage history • typing indicator", fillcolor="#F2EEFF", color="#8B78E6"];
+    modes [label="Mode Controls\nAuto • Coding • Math", fillcolor="#F2EEFF", color="#8B78E6"];
+    prompts [label="Suggested Prompts\nand copy response", fillcolor="#F2EEFF", color="#8B78E6"];
+    ui -> chat [style=invis]; ui -> modes [style=invis]; ui -> prompts [style=invis];
+  }
 
-  ui -> api [label=" REST JSON ", fontname="Arial", fontsize=11, color="#475569"];
-  api -> router;
-  router -> math;
-  router -> openai;
-  router -> local;
+  subgraph cluster_api {
+    label="BACKEND — FastAPI REST Service"; color="#2B9AC6"; penwidth=1.5; style="rounded,dashed"; fontsize=15; fontname="Arial Bold";
+    api [label="REST API Gateway", fillcolor="#DDF3FF", color="#2693C7"];
+    health [label="GET /api/health", fillcolor="#EFFAFF", color="#63B7D8"];
+    chatapi [label="POST /api/chat", fillcolor="#EFFAFF", color="#63B7D8"];
+    mathapi [label="POST /api/math", fillcolor="#EFFAFF", color="#63B7D8"];
+    validate [label="Pydantic Validation\nCORS • Error Handling", fillcolor="#EFFAFF", color="#63B7D8"];
+    api -> health [style=invis]; api -> chatapi [style=invis]; api -> mathapi [style=invis]; api -> validate [style=invis];
+  }
+
+  router [label="Intent Router\nAuto • Coding • Math • General", fillcolor="#FFF0C7", color="#D79A00", fontsize=14];
+
+  subgraph cluster_tools {
+    label="PROCESSING LAYER"; color="#4AA474"; penwidth=1.5; style="rounded,dashed"; fontsize=15; fontname="Arial Bold";
+    math [label="SymPy Math Engine\nsolve • simplify • diff • integrate", fillcolor="#DDF7E8", color="#3D9B66"];
+    local [label="Local Deterministic\nFallback Responses", fillcolor="#FFE5E5", color="#C65B5B"];
+    openai [label="Optional OpenAI-Compatible\nProvider", fillcolor="#E8ECF1", color="#64748B"];
+  }
+
+  subgraph cluster_ops {
+    label="CONFIGURATION & DELIVERY"; color="#8C6A43"; penwidth=1.5; style="rounded,dashed"; fontsize=15; fontname="Arial Bold";
+    env [label="Environment Variables\nAPI key • model • CORS", fillcolor="#FFF1DD", color="#C58A44"];
+    tests [label="Pytest + TestClient\nhealth • math • routing", fillcolor="#FFF1DD", color="#C58A44"];
+    delivery [label="Docker + Compose\nGitHub Actions CI", fillcolor="#FFF1DD", color="#C58A44"];
+  }
+
+  chat -> api [label="REST JSON"];
+  modes -> api [label="mode + message"];
+  prompts -> api [style=dashed, label="prompt"];
+  api -> validate;
+  validate -> router;
+  api -> mathapi [style=dashed, label="exact tool call"];
+  mathapi -> math;
+  router -> math [label="math request"];
+  router -> openai [label="coding / general\nwith API key"];
+  router -> local [label="fallback"];
+  env -> openai [style=dashed, label="secure config"];
+  env -> api [style=dashed];
+  tests -> api [style=dashed, label="verify"];
+  delivery -> api [style=dashed, label="build / deploy"];
 }
