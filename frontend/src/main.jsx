@@ -11,6 +11,20 @@ function extractCode(text) {
   return match ? { language: match[1] || 'python', code: match[2].trim() } : null;
 }
 
+function highlightCode(code, language) {
+  const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const keywords = language === 'python'
+    ? 'and|as|assert|break|class|continue|def|del|elif|else|except|False|finally|for|from|if|import|in|is|None|not|or|pass|raise|return|True|try|while|with|yield'
+    : 'abstract|boolean|break|case|catch|class|const|continue|def|else|false|for|function|if|import|in|int|let|new|null|private|public|return|static|string|this|throw|true|try|void|while|using|namespace|include';
+  const token = new RegExp(`(\\/\\/[^\\n]*|#[^\\n]*|&quot;(?:\\\\.|[^&]|&(?!quot;))*?&quot;|'(?:\\\\.|[^'])*'|\\b(?:${keywords})\\b|\\b\\d+(?:\\.\\d+)?\\b)`, 'g');
+  return escaped.replace(token, (value) => {
+    if (value.startsWith('#') || value.startsWith('//')) return `<span class="tok-comment">${value}</span>`;
+    if (value.startsWith('&quot;') || value.startsWith("'") ) return `<span class="tok-string">${value}</span>`;
+    if (/^\d/.test(value)) return `<span class="tok-number">${value}</span>`;
+    return `<span class="tok-keyword">${value}</span>`;
+  });
+}
+
 function renderMarkdown(text) {
   const parts = text.split(/```([\w+#-]*)\n([\s\S]*?)```/g);
   const nodes = [];
@@ -26,7 +40,7 @@ function renderMarkdown(text) {
     if (i + 1 < parts.length) {
       const language = parts[i + 1] || 'python';
       const code = parts[i + 2];
-      nodes.push(<div className="code-shell" key={`code-${i}`}><div className="code-header"><span>{language || 'python'}</span><span>CODE</span></div><pre className="code-block"><code>{code.trim()}</code></pre></div>);
+      nodes.push(<div className="code-shell" key={`code-${i}`}><div className="code-header"><span>{language || 'python'}</span><span>CODE</span></div><pre className="code-block"><code dangerouslySetInnerHTML={{ __html: highlightCode(code.trim(), language || 'python') }} /></pre></div>);
     }
   }
   return nodes;
