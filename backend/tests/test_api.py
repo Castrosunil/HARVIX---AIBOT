@@ -11,6 +11,20 @@ def test_math_equation():
     assert response.status_code == 200
     assert '1' in response.json()['result'] and '3/2' in response.json()['result']
 
+def test_natural_language_math_prompts():
+    cases = [
+        ('Solve the equation 2*x^2 - 5*x + 3 = 0.', '3/2'),
+        ('Find the derivative of x^3.', '3*x**2'),
+        ('Find the integral of x^2.', 'x**3/3'),
+        ('Simplify (x + 2)^2 - x^2.', '4*x + 4'),
+    ]
+    for prompt, expected in cases:
+        response = client.post('/api/chat', json={'message': prompt, 'mode': 'auto'})
+        data = response.json()
+        assert response.status_code == 200
+        assert data['mode'] == 'math'
+        assert expected in data['response']
+
 def test_chat_routes_coding():
     response = client.post('/api/chat', json={'message': 'Debug this Python function', 'mode': 'auto'})
     assert response.status_code == 200 and response.json()['mode'] == 'coding'

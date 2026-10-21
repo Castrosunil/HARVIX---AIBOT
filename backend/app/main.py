@@ -92,7 +92,7 @@ def route_message(message: str, requested: str) -> str:
     ]
     if "```" in message or any(term in lower for term in coding_terms):
         return "coding"
-    if any(term in lower for term in ["derivative", "integral", "solve equation", "simplify", "matrix", "calculate", "factorize", "limit"]):
+    if any(term in lower for term in ["derivative", "differentiate", "integral", "integrate", "solve equation", "solve the equation", "simplify", "matrix", "calculate", "evaluate", "factorize", "limit"]) or ("=" in message and any(term in lower for term in ["solve", "equation", "calculate"])):
         return "math"
     return "general"
 
@@ -116,6 +116,31 @@ def math_engine(expression: str, operation: str = "solve") -> MathResponse:
         return MathResponse(expression=raw, result=str(result), steps=[f"Parse the expression: {raw}", "Apply exact symbolic simplification", f"Final result: {result}"], verified=True)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"I could not parse that expression safely: {exc}") from exc
+
+
+def prepare_math_request(message: str) -> tuple[str, str]:
+    """Convert natural-language math prompts into a SymPy expression and operation."""
+    raw = message.strip()
+    lower = raw.lower()
+    operation = "solve"
+    if "derivative" in lower or "differentiate" in lower:
+        operation = "derivative"
+        match = re.search(r"(?:of|for)\s+(.+?)(?:\s+with\s+respect\s+to\s+[a-z])?[?.!]*$", raw, re.IGNORECASE)
+        raw = match.group(1).strip() if match else re.sub(r"^.*?(?:derivative|differentiate)\s*", "", raw, flags=re.IGNORECASE).strip(" ?.!")
+    elif "integral" in lower or "integrate" in lower:
+        operation = "integral"
+        match = re.search(r"(?:of|from)\s+(.+?)(?:\s+with\s+respect\s+to\s+[a-z])?[?.!]*$", raw, re.IGNORECASE)
+        raw = match.group(1).strip() if match else re.sub(r"^.*?(?:integral|integrate)\s*", "", raw, flags=re.IGNORECASE).strip(" ?.!")
+    elif "simplify" in lower:
+        operation = "simplify"
+        raw = re.sub(r"^.*?simplify\s+", "", raw, flags=re.IGNORECASE).strip(" ?.!")
+    elif "limit" in lower:
+        operation = "simplify"
+        raw = re.sub(r"^.*?limit\s+of\s+", "", raw, flags=re.IGNORECASE).strip(" ?.!")
+    else:
+        raw = re.sub(r"^\s*(?:solve|calculate|find|evaluate)\s+(?:the\s+)?(?:equation|expression|value)?\s*", "", raw, flags=re.IGNORECASE)
+        raw = raw.strip(" ?.!")
+    return raw, operation
 
 
 def extract_code(text: str) -> tuple[str, str]:
@@ -253,10 +278,11 @@ def local_code_reply(message: str, history: list[dict[str, str]]) -> str:
 def local_reply(message: str, mode: str, history: list[dict[str, str]]) -> str:
     if mode == "math":
         try:
-            result = math_engine(message).result
-            return f"### Math result\n\n{result}\n\n_The result was calculated with SymPy._"
+            expression, operation = prepare_math_request(message)
+            result = math_engine(expression, operation).result
+            return f"### Math result\n\n**Expression:** `{expression}`\n\n**Answer:** `{result}`\n\n_The result was calculated with SymPy._"
         except HTTPException:
-            return "I could not parse that expression. Provide an equation or expression such as `2*x^2 - 5*x + 3 = 0`."
+            return "I could not parse the mathematical expression. Use a prompt such as `Solve the equation 2*x^2 - 5*x + 3 = 0` or `Find the derivative of x^3`."
     if mode == "coding":
         return local_code_reply(message, history)
     return "Hello, I’m HARVIX. Ask for code, debugging, code conversion, code execution, mathematics, or a technical explanation."
