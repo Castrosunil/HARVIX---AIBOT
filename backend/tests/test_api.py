@@ -25,6 +25,16 @@ def test_natural_language_math_prompts():
         assert data['mode'] == 'math'
         assert expected in data['response']
 
+def test_math_ignores_dashboard_text_around_equation():
+    response = client.post('/api/chat', json={
+        'message': 'HARVIX math\nMath result\nSolve the equation 2*x^2 - 5*x + 3 = 0.',
+        'mode': 'math',
+    })
+    data = response.json()
+    assert response.status_code == 200
+    assert '[1, 3/2]' in data['response']
+    assert 'HARVIX' not in data['response']
+
 def test_chat_routes_coding():
     response = client.post('/api/chat', json={'message': 'Debug this Python function', 'mode': 'auto'})
     assert response.status_code == 200 and response.json()['mode'] == 'coding'

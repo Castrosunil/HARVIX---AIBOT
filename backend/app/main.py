@@ -120,7 +120,7 @@ def math_engine(expression: str, operation: str = "solve") -> MathResponse:
 
 def prepare_math_request(message: str) -> tuple[str, str]:
     """Convert natural-language math prompts into a SymPy expression and operation."""
-    raw = message.strip()
+    raw = message.replace("**", "").replace("`", "").strip()
     lower = raw.lower()
     operation = "solve"
     if "derivative" in lower or "differentiate" in lower:
@@ -139,7 +139,17 @@ def prepare_math_request(message: str) -> tuple[str, str]:
         raw = re.sub(r"^.*?limit\s+of\s+", "", raw, flags=re.IGNORECASE).strip(" ?.!")
     else:
         raw = re.sub(r"^\s*(?:solve|calculate|find|evaluate)\s+(?:the\s+)?(?:equation|expression|value)?\s*", "", raw, flags=re.IGNORECASE)
-        raw = raw.strip(" ?.!")
+        raw = raw.strip(" ?.!" )
+    # If UI text or a copied answer surrounds an equation, keep only the
+    # equation itself. Starting at a digit or common algebraic variable
+    # prevents words such as "HARVIX" from becoming SymPy symbols.
+    if "=" in raw:
+        marker = re.search(r"\b(?:equation|expression|value)\b", raw, re.IGNORECASE)
+        if marker:
+            raw = raw[marker.end():].strip()
+        equation = re.search(r"([0-9xyzXYZ][0-9A-Za-z_().+\-*/^\s]*=[0-9A-Za-z_().+\-*/^\s]+)", raw)
+        if equation:
+            raw = equation.group(1).strip(" .,!?")
     return raw, operation
 
 
